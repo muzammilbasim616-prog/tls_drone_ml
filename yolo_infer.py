@@ -1,9 +1,8 @@
 from ultralytics import YOLO
-import torch
 import json
 import os
 
-model = YOLO("yolov8n.pt")
+model = YOLO("runs/detect/train4/weights/best.pt")
 
 results = model(
     source="test_images",
