@@ -69,7 +69,10 @@ def is_new_detection(label, lat, lon, confidence, last_sent):
     return False
 
 def main():
-    model_path = "runs/detect/train4/weights/best.pt"
+    # Use absolute path relative to this script
+    import os
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(script_dir, "runs", "detect", "train4", "weights", "best.pt")
 
     try:
         model = YOLO(model_path)
@@ -87,7 +90,7 @@ def main():
     results = model.predict(source=0, stream=True, conf=0.4, verbose=False)
 
     # CONFIG
-    BACKEND_URL = "http://192.168.1.56:8000/detections"
+    BACKEND_URL = "http://15.206.79.226:8000/detect"
     HISTORY_LEN = 10     # Track last N frames
     MIN_FRAMES = 5       # Must appear in K frames
     CONF_THRESHOLD = 0.85 # Average confidence threshold
@@ -137,15 +140,13 @@ def main():
                 
                 if success:
                     image_base64 = base64.b64encode(buffer).decode("utf-8")
-                    timestamp = datetime.now().isoformat()
                     
                     payload = {
-                        "image_base64": image_base64,
+                        "image": image_base64,
                         "label": lbl,
                         "confidence": cnf,
                         "lat": current_lat,
-                        "lon": current_lon,
-                        "timestamp": timestamp
+                        "lon": current_lon
                     }
                     
                     print("\n----- NEW EVENT DETECTED -----")
@@ -162,6 +163,7 @@ def main():
                             confidence_buffer.clear() 
                         else:
                             print(f"⚠️ Server exceeded: {resp.status_code}")
+                            print(f"Response: {resp.text}")
                     except Exception as e:
                         print(f"❌ Send failed: {e}")
 
@@ -181,10 +183,20 @@ def main():
             # Optional: Print status dot to show it's alive
             # print(".", end="", flush=True)
 
+            # Show the frame
+            annotated_frame = r.plot()
+            cv2.imshow("Live Detection", annotated_frame)
+
+            # Quit if 'q' is pressed
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
     except KeyboardInterrupt:
         print("\nStopping detection.")
     except Exception as e:
         print(f"\nRuntime error: {e}")
+    finally:
+        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     main()
