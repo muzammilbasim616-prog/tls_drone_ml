@@ -87,13 +87,13 @@ def main():
     gps_thread.start()
 
     # Inference stream
-    results = model.predict(source=0, stream=True, conf=0.4, verbose=False)
+    results = model.predict(source=1, stream=True, conf=0.4, verbose=False)
 
     # CONFIG
     BACKEND_URL = "http://15.206.79.226:8000/detect"
     HISTORY_LEN = 10     # Track last N frames
     MIN_FRAMES = 5       # Must appear in K frames
-    CONF_THRESHOLD = 0.85 # Average confidence threshold
+    CONF_THRESHOLD = 0.75 # Average confidence threshold
 
     # STATE VARIABLES (minimal)
     event_active = False
